@@ -14,35 +14,40 @@ custom progress parsing, and fallback URL resolution.
 
 import os
 import re
+import shutil
 import threading
 from typing import Callable, Optional, List
 import yt_dlp
 from core.url_builder import build_brightcove_urls
 
 
+def _clean_ansi(text: str) -> str:
+    """Removes ANSI color and control escape sequences."""
+    return re.sub(r"\x1b\[[0-9;]*[mK]", "", text or "")
+
+
 class YtDlpLogger:
-    """Redirects yt-dlp log messages to GUI callback."""
+    """Redirects yt-dlp log messages to GUI callback with ANSI stripping."""
     def __init__(self, log_cb: Optional[Callable[[str], None]]):
         self.log_cb = log_cb
 
     def debug(self, msg: str):
-        # Filter overly verbose internal debug strings if desired
         if msg.startswith("[debug]"):
             return
         if self.log_cb:
-            self.log_cb(msg)
+            self.log_cb(_clean_ansi(msg))
 
     def info(self, msg: str):
         if self.log_cb:
-            self.log_cb(msg)
+            self.log_cb(_clean_ansi(msg))
 
     def warning(self, msg: str):
         if self.log_cb:
-            self.log_cb(f"Warning: {msg}")
+            self.log_cb(f"Warning: {_clean_ansi(msg)}")
 
     def error(self, msg: str):
         if self.log_cb:
-            self.log_cb(f"Error: {msg}")
+            self.log_cb(f"Error: {_clean_ansi(msg)}")
 
 
 class DownloadCancelledException(Exception):
@@ -113,17 +118,30 @@ class BrightcoveDownloader:
                 self.status_cb("Processing final video output...")
 
     def _get_format_spec(self) -> str:
-        """Translates user-selected quality to yt-dlp format string."""
+        """
+        Translates user-selected quality to yt-dlp format string.
+        Uses single-container streams ('best' / 'best[height<=...]') by default,
+        preventing errors when ffmpeg is not installed.
+        """
+        has_ffmpeg = shutil.which("ffmpeg") is not None
         q = (self.quality or "best").lower()
+
         if q == "1080p":
-            return "bestvideo[height<=1080]+bestaudio/best[height<=1080]/best"
+            if has_ffmpeg:
+                return "bestvideo[height<=1080]+bestaudio/best[height<=1080]/best"
+            return "best[height<=1080]/best"
         elif q == "720p":
-            return "bestvideo[height<=720]+bestaudio/best[height<=720]/best"
+            if has_ffmpeg:
+                return "bestvideo[height<=720]+bestaudio/best[height<=720]/best"
+            return "best[height<=720]/best"
         elif q == "480p":
-            return "bestvideo[height<=480]+bestaudio/best[height<=480]/best"
+            if has_ffmpeg:
+                return "bestvideo[height<=480]+bestaudio/best[height<=480]/best"
+            return "best[height<=480]/best"
         elif q == "audio":
             return "bestaudio/best"
-        return "bestvideo+bestaudio/best"
+
+        return "best"
 
     def download(self, account_id: str, player_id: str, video_id: str):
         """Executes download across candidate URLs until success or error."""
@@ -166,11 +184,12 @@ class BrightcoveDownloader:
                 return
             except Exception as e:
                 last_error = e
+                clean_err = _clean_ansi(str(e))
                 if self.status_cb:
-                    self.status_cb(f"Source {idx + 1} failed: {e}")
+                    self.status_cb(f"Source {idx + 1} failed: {clean_err}")
 
         # If all candidates failed
-        err_msg = str(last_error) if last_error else "Failed to download video from Brightcove."
+        err_msg = _clean_ansi(str(last_error)) if last_error else "Failed to download video from Brightcove."
         if self.status_cb:
             self.status_cb(f"Error: {err_msg}")
         if self.completion_cb:
