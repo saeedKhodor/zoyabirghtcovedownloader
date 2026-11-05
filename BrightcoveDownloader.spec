@@ -1,13 +1,29 @@
 # -*- mode: python ; coding: utf-8 -*-
 # === CODE INDEX ===
-# Analysis configuration                   Line 11
-# PYZ configuration                        Line 25
-# EXE configuration                        Line 28
-# COLLECT configuration                    Line 44
-# BUNDLE configuration (macOS .app)        Line 54
+# Build ID & dynamic naming               Line 12
+# Analysis configuration                   Line 27
+# PYZ configuration                        Line 41
+# EXE configuration                        Line 44
+# COLLECT configuration                    Line 60
+# BUNDLE configuration (macOS .app)        Line 70
 
+import os
 import sys
-from PyInstaller.utils.hooks import collect_submodules, collect_data_files
+import random
+
+# Obtain dynamic build identifier to avoid macOS LaunchServices caching
+build_id = os.environ.get("BUILD_ID")
+if not build_id:
+    try:
+        from core.version import BUILD_ID
+        build_id = BUILD_ID if BUILD_ID != "dev" else str(random.randint(1000, 9999))
+    except Exception:
+        build_id = str(random.randint(1000, 9999))
+
+app_display_name = f"Brightcove Video Downloader {build_id}"
+app_bundle_name = f"{app_display_name}.app"
+exe_name = f"BrightcoveDownloader_{build_id}"
+bundle_identifier = f"com.brightcove.downloader.b{build_id}"
 
 block_cipher = None
 
@@ -34,7 +50,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='BrightcoveDownloader',
+    name=exe_name,
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -55,20 +71,20 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='BrightcoveDownloader',
+    name=exe_name,
 )
 
 app = BUNDLE(
     coll,
-    name='Brightcove Video Downloader.app',
+    name=app_bundle_name,
     icon=None,
-    bundle_identifier='com.brightcove.downloader',
+    bundle_identifier=bundle_identifier,
     info_plist={
-        'CFBundleName': 'Brightcove Video Downloader',
-        'CFBundleDisplayName': 'Brightcove Video Downloader',
-        'CFBundleIdentifier': 'com.brightcove.downloader',
-        'CFBundleShortVersionString': '1.0.0',
-        'CFBundleVersion': '1.0.0',
+        'CFBundleName': app_display_name,
+        'CFBundleDisplayName': app_display_name,
+        'CFBundleIdentifier': bundle_identifier,
+        'CFBundleShortVersionString': f'1.0.{build_id}',
+        'CFBundleVersion': str(build_id),
         'NSHighResolutionCapable': 'True',
         'NSRequiresAquaSystemAppearance': 'False',
         'LSMinimumSystemVersion': '11.0.0',

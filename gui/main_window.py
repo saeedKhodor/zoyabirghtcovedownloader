@@ -28,6 +28,7 @@ from typing import Optional
 
 from core.downloader import BrightcoveDownloader
 from core.url_builder import parse_input_fields
+from core.version import BUILD_ID, VERSION
 from gui.theme import setup_custom_theme, get_system_font, is_macos, COLORS
 
 
@@ -36,7 +37,8 @@ class MainWindow:
 
     def __init__(self, root: tk.Tk):
         self.root = root
-        self.root.title("Brightcove Video Downloader")
+        title_tag = f" - Build {BUILD_ID}" if BUILD_ID != "dev" else ""
+        self.root.title(f"Brightcove Video Downloader{title_tag}")
         self.root.geometry("640x700")
         self.root.minsize(580, 620)
 
@@ -62,6 +64,9 @@ class MainWindow:
         self._create_controls(container)
         self._create_progress_section(container)
         self._create_log_console(container)
+
+        build_note = f" (Build {BUILD_ID})" if BUILD_ID != "dev" else ""
+        self._log(f"Brightcove Downloader v{VERSION}{build_note} initialized.")
 
     def _create_header(self, parent: ttk.Frame):
         """Header title and subtitle."""

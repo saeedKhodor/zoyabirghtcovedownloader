@@ -21,22 +21,13 @@ jobs:
           python-version: "3.11"
           cache: "pip"
 
-      - name: Install dependencies
+      - name: Run Build Script
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-      - name: Build macOS App Bundle
-        run: |
-          pyinstaller --clean -y BrightcoveDownloader.spec
-
-      - name: Package App Bundle into ZIP
-        run: |
-          cd dist
-          zip -r -q "Brightcove-Video-Downloader-macOS.zip" "Brightcove Video Downloader.app"
+          chmod +x build_mac.sh
+          ./build_mac.sh
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Brightcove-Video-Downloader-macOS
-          path: dist/Brightcove-Video-Downloader-macOS.zip
+          name: Brightcove-Downloader-macOS
+          path: dist/*.zip

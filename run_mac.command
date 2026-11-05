@@ -25,5 +25,8 @@ if ! python3 -c "import yt_dlp" 2>/dev/null; then
     pip install -r requirements.txt
 fi
 
+# Clear any cached bytecode to ensure latest code changes run
+find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+
 # Launch application
 python3 main.py
