@@ -9,6 +9,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
+export PYTHONPATH="${SCRIPT_DIR}:${PYTHONPATH}"
 
 # Generate a random 4-digit build number (between 1000 and 9999)
 RANDOM_NUM=$((1000 + RANDOM % 9000))
