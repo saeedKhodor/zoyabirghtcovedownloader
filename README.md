@@ -40,9 +40,16 @@ ZoyaBrightcoveDownloader/
 
 ---
 
-## How to Run on macOS
+## Option 1: Local Web Dashboard (Recommended & Most Reliable)
 
-### Option 1: Double-Click Runner (No Build Required)
+A lightweight localhost web server with **zero compilation and zero GUI issues**:
+1. Double-click **`launch_web_mac.command`** on the Mac (or run `python3 server.py`).
+2. It immediately launches a local server and **automatically opens Safari/Chrome** to `http://127.0.0.1:8080`.
+3. Enter Account ID, Player ID, and Video ID, click **Download Video**, and the video downloads directly into your Mac's **Downloads** folder with live progress tracking!
+
+---
+
+## Option 2: Native Tkinter Desktop GUI
 1. Double-click `run_mac.command` in macOS Finder.
 2. If prompted, allow terminal execution. It will automatically check dependencies and open the GUI.
 
