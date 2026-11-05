@@ -10,6 +10,7 @@
 import os
 import sys
 import random
+import core.mac_patch  # Patch platform.mac_ver() during spec execution
 
 # Obtain dynamic build identifier to avoid macOS LaunchServices caching
 build_id = os.environ.get("BUILD_ID")

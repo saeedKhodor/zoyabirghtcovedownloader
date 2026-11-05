@@ -1,11 +1,12 @@
 # === CODE INDEX ===
-# main()                                   Line 16
+# main()                                   Line 18
 
 """
 Main Application Entry Point for Brightcove Video Downloader.
 """
 
 import sys
+import core.mac_patch  # Must be imported first to patch macOS platform version
 import tkinter as tk
 from gui.main_window import MainWindow
 
